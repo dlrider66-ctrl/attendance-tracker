@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Attendance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-card h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .status-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .warning .progress-bar {
+            background: linear-gradient(90deg, #FF9800, #FFC107);
+        }
+
+        .danger .progress-bar {
+            background: linear-gradient(90deg, #F44336, #E91E63);
+        }
+
+        .discipline-levels {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+
+        .level {
+            text-align: center;
+            flex: 1;
+            padding: 10px 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .level.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .level.completed {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .btn-danger {
+            background: #F44336;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .callout-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .callout-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .callout-info {
+            flex: 1;
+        }
+
+        .callout-date {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .callout-mins {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .excused {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .unexcused {
+            color: #F44336;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: #F44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .summary {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notice {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-radius: 4px;
+        }
+
+        .carryover-note {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            color: #333;
+        }
+
+        .user-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-header h2 {
+            font-size: 20px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .login-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-screen h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .password-input {
+            margin-top: 15px;
+        }
+
+        .wrong-password {
+            color: #F44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* FAQ Dropdown Styles */
+        .faq-section {
+            margin-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .faq-toggle {
+            background: #f5f5f5;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .faq-toggle:hover {
+            background: #e8e8e8;
+        }
+
+        .faq-toggle:active {
+            transform: scale(0.98);
+        }
+
+        .faq-content {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .faq-content.show {
+            display: block;
+        }
+
+        .faq-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .faq-item h4 {
+            color: #F44336;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .faq-item p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .faq-item ul {
+            font-size: 13px;
+            color: #666;
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+
+        .faq-item li {
+            margin-bottom: 3px;
+        }
+
+        .faq-item strong {
+            color: #667eea;
+        }
+
+        /* Auto-delete notice */
+        .auto-delete-notice {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            border-radius: 4px;
+            color: #2E7D32;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .status-card h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="container">
+        <div class="login-screen">
+            <h1>📅 Secure Attendance Tracker</h1>
+            <h2>Login</h2>
+            
+            <div class="form-group">
+                <label for="usernameInput">Username:</label>
+                <input type="text" id="usernameInput" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group password-input">
+                <label for="passwordInput">Password:</label>
+                <input type="password" id="passwordInput" placeholder="Enter password">
+                <div class="wrong-password" id="wrongPassword">Incorrect username or password</div>
+            </div>
+            
+            <button class="btn" onclick="login()">Login</button>
+            
+            <button class="btn btn-secondary" onclick="showCreateForm()">Create New Account</button>
+            
+            <div id="createForm" class="hidden">
+                <h3 style="color: #667eea; margin-top: 30px;">Create New Account</h3>
+                <div class="form-group">
+                    <label for="newUserName">Username:</label>
+                    <input type="text" id="newUserName" placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">Password:</label>
+                    <input type="password" id="newUserPassword" placeholder="Create password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm password">
+                </div>
+                <button class="btn" onclick="createUser()">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <div id="appScreen" class="container hidden">
+        <div class="user-header">
+            <h2 id="currentUserName">User Name</h2>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="notice">
+            <strong>Discipline based on UNEXCUSED time only</strong>
+            <div class="carryover-note">
+                ⚠️ <strong>Carryover Rule:</strong> When you cross a threshold, excess time carries into the next level. 
+                Example: At 24 hours, a 5-hour callout puts you at 1 hr into Written Warning with 4 hours already counting toward the next level.
+            </div>
+        </div>
+
+        <!-- Auto-delete notice -->
+        <div class="auto-delete-notice">
+            <strong>ℹ️ Auto-Deletion Policy:</strong> Callouts older than 366 days are automatically deleted for privacy and storage management.
+        </div>
+
+        <div class="status-card">
+            <h2 id="currentLevel">Verbal Warning</h2>
+            <p id="levelDescription">0-25 hours (0-1500 mins) of unexcused time</p>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar">0 / 1500 mins</div>
+            </div>
+            <p id="remainingText">1500 unexcused minutes until Written Warning</p>
+        </div>
+
+        <div class="discipline-levels">
+            <div class="level completed">Verbal<br>0-1500</div>
+            <div class="level active">Written<br>1500-3000</div>
+            <div class="level">Final<br>3000-4500</div>
+            <div class="level">Termination<br>4500+</div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item">
+                <span>Total Minutes (All):</span>
+                <span id="totalMins">0</span>
+            </div>
+            <div class="summary-item">
+                <span>Excused Minutes:</span>
+                <span class="excused" id="excusedMins">0</span>
+            </div>
+            <div class="summary-item">
+                <span><strong>Unexcused Minutes:</strong></span>
+                <span class="unexcused" id="unexcusedMins"><strong>0</strong></span>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; color: #667eea;">Log New Call-out</h3>
+        <form id="calloutForm">
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="totalMinsInput">Total Minutes Called Out</label>
+                <input type="number" id="totalMinsInput" placeholder="e.g., 480 for 8 hours" required>
+            </div>
+            <div class="form-group">
+                <label for="excusedMinsInput">Excused Minutes (Sick Time Used)</label>
+                <input type="number" id="excusedMinsInput" placeholder="e.g., 60 for 1 hour" required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason (optional)</label>
+                <select id="reason">
+                    <option value="">Select reason...</option>
+                    <option value="Tardy">Tardy</option>
+                    <option value="Callout">Callout</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Add Call-out</button>
+        </form>
+
+        <button class="btn btn-secondary" onclick="toggleHistory()">Show/Hide History</button>
+        
+        <button class="btn btn-success" onclick="exportData()">Export My Data</button>
+        
+        <button class="btn btn-danger" onclick="changePassword()">Change Password</button>
+
+        <!-- FAQ DROPDOWN -->
+        <div class="faq-section">
+            <button class="faq-toggle" onclick="toggleFAQ()">
+                ❓ Data Safety & Important Info (Click to Show/Hide)
+            </button>
+            <div class="faq-content" id="faqContent">
+                <div class="faq-item">
+                    <h4>⚠️ When Your Data Can Be LOST:</h4>
+                    <ul>
+                        <li>Clearing browser cache or data</li>
+                        <li>Using "Private/Incognito" mode</li>
+                        <li>Uninstalling/reinstalling your browser</li>
+                        <li>Switching to a different browser (e.g., Chrome → Safari)</li>
+                        <li>Switching devices (Phone → Tablet → Computer)</li>
+                        <li>Browser storage limit exceeded (rare)</li>
+                    </ul>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>🔒 How to PROTECT Your Data:</h4>
+                    <ul>
+                        <li>Save this file to your phone/computer (don't just bookmark it)</li>
+                        <li>Never clear browser data unless you backup first</li>
+                        <li>Use the "Export My Data" button regularly</li>
+                        <li>Take screenshots of your history monthly</li>
+                    </ul>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>📱 Where Your Data Lives:</h4>
+                    <p>Your data is stored <strong>only on this device</strong> in this browser. It's tied to your browser app, not the file itself. You can delete and re-download this HTML file and your data will still be here.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>💾 How to Backup:</h4>
+                    <p>Tap <strong>"Export My Data"</strong> to download a CSV file with all your callouts. Save this file somewhere safe (email it to yourself, save to cloud storage, etc.). You can open CSV files in Excel or Google Sheets.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>🔄 Switching Devices:</h4>
+                    <p>Data does NOT automatically transfer between devices. To move your data:</p>
+                    <ol style="margin-left: 20px; font-size: 13px;">
+                        <li>Export data from old device</li>
+                        <li>Manually re-enter it on new device OR</li>
+                        <li>Ask HR for the server-based version for automatic sync</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div id="historySection" class="hidden">
+            <h3 style="margin: 20px 0 15px; color: #667eea;">Call-out History</h3>
+            <div class="callout-list" id="calloutList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const THRESHOLD = 1500; // 25 hours in minutes
+        const RETENTION_DAYS = 366;
+        const LEVELS = [
+            { name: 'Verbal Warning', min: 0, max: 1500, description: '0-25 hours (0-1500 mins) of unexcused time' },
+            { name: 'Written Warning', min: 1500, max: 3000, description: '25-50 hours (1500-3000 mins) of unexcused time' },
+            { name: 'Final Written Warning', min: 3000, max: 4500, description: '50-75 hours (3000-4500 mins) of unexcused time' },
+            { name: 'Termination', min: 4500, max: Infinity, description: '75+ hours (4500+ mins) of unexcused time' }
+        ];
+
+        // Multi-user data structure
+        let userData = JSON.parse(localStorage.getItem('userData')) || {};
+        let currentUser = null;
+
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Simple hash function (NOT cryptographically secure!)
+        function simpleHash(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // Cleanup old records
+        function cleanupOldRecords() {
+            if (!currentUser || !userData[currentUser]) return;
+            
+            const now = Date.now();
+            const retentionMs = RETENTION_DAYS * 24 * 60 * 60 * 1000;
+            const originalLength = userData[currentUser].callouts.length;
+            
+            // Filter out records older than retention period
+            userData[currentUser].callouts = userData[currentUser].callouts.filter(callout => {
+                const recordAge = now - (callout.created || Date.now());
+                return recordAge < retentionMs;
+            });
+            
+            // Save if any were deleted
+            if (userData[currentUser].callouts.length !== originalLength) {
+                localStorage.setItem('userData', JSON.stringify(userData));
+                console.log(`Deleted ${originalLength - userData[currentUser].callouts.length} old records`);
+            }
+        }
+
+        // User management functions
+        function showCreateForm() {
+            document.getElementById('createForm').classList.toggle('hidden');
+        }
+
+        function createUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            const password = document.getElementById('newUserPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!name) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            if (userData[name]) {
+                alert('Username already exists');
+                return;
+            }
+            
+            if (!password || password.length < 4) {
+                alert('Password must be at least 4 characters');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Use username as key
+            userData[name] = {
+                name: name,
+                passwordHash: simpleHash(password),
+                callouts: []
+            };
+            
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Reset form
+            document.getElementById('newUserName').value = '';
+            document.getElementById('newUserPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('createForm').classList.add('hidden');
+            
+            alert(`Account created for ${name}. You can now login.`);
+        }
+
+        function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!username) {
+                alert('Please enter username');
+                return;
+            }
+            
+            if (!password) {
+                alert('Please enter password');
+                return;
+            }
+            
+            // Check if user exists
+            if (!userData[username]) {
+                document.getElementById('wrongPassword').style.display = 'block';
+                document.getElementById('wrongPassword').textContent = 'User not found';
+                return;
+            }
+            
+            // Verify password
+            if (userData[username].passwordHash === simpleHash(password)) {
+                currentUser = username;
+                document.getElementById('currentUserName').textContent = userData[currentUser].name;
+                
+                // Switch screens
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                
+                // Clear fields
+                document.getElementById('usernameInput').value = '';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('wrongPassword').style.display = 'none';
+                
+                // Run cleanup on login
+                cleanupOldRecords();
+                updateUI();
+            } else {
+                document.getElementById('wrongPassword').style.display = 'block';
+                document.getElementById('wrongPassword').textContent = 'Incorrect password';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appScreen').classList.add('hidden');
+        }
+
+        function changePassword() {
+            const newPassword = prompt('Enter new password (min 4 characters):');
+            if (!newPassword || newPassword.length < 4) {
+                alert('Password must be at least 4 characters');
+                return;
+            }
+            
+            const confirmPassword = prompt('Confirm new password:');
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to change your password?')) {
+                userData[currentUser].passwordHash = simpleHash(newPassword);
+                localStorage.setItem('userData', JSON.stringify(userData));
+                alert('Password changed successfully!');
+            }
+        }
+
+        // FAQ Toggle
+        function toggleFAQ() {
+            const faqContent = document.getElementById('faqContent');
+            faqContent.classList.toggle('show');
+        }
+
+        // Export Data
+        function exportData() {
+            if (!currentUser || !userData[currentUser]) {
+                alert('No user logged in');
+                return;
+            }
+            
+            const callouts = userData[currentUser].callouts;
+            if (callouts.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            // Create CSV content
+            let csv = 'Date,Total Minutes,Excused Minutes,Unexcused Minutes,Reason\n';
+            
+            callouts.forEach(callout => {
+                const unexcused = callout.total - callout.excused;
+                const date = new Date(callout.date).toLocaleDateString();
+                const reason = callout.reason || 'None';
+                csv += `${date},${callout.total},${callout.excused},${unexcused},${reason}\n`;
+            });
+            
+            // Add summary row
+            const totals = calculateTotals();
+            csv += '\nSUMMARY\n';
+            csv += `Total Minutes (All),${totals.total}\n`;
+            csv += `Excused Minutes,${totals.excused}\n`;
+            csv += `Unexcused Minutes,${totals.unexcused}\n`;
+            
+            // Get current level
+            const currentLevel = getCurrentLevel(totals.unexcused);
+            csv += `Current Discipline Level,${currentLevel.name}\n`;
+            
+            // Create and download file
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_${currentUser}_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert(`Data exported for ${currentUser}! Check your downloads folder.`);
+        }
+
+        // Calculate totals
+        function calculateTotals() {
+            let totalExcused = 0;
+            let totalUnexcused = 0;
+            
+            if (!currentUser || !userData[currentUser]) return { total: 0, excused: 0, unexcused: 0 };
+            
+            userData[currentUser].callouts.forEach(callout => {
+                totalExcused += callout.excused;
+                totalUnexcused += (callout.total - callout.excused);
+            });
+            
+            return { 
+                total: totalExcused + totalUnexcused,
+                excused: totalExcused, 
+                unexcused: totalUnexcused
+            };
+        }
+
+        // Get current level
+        function getCurrentLevel(unexcusedMinutes) {
+            for (let level of LEVELS) {
+                if (unexcusedMinutes >= level.min && unexcusedMinutes < level.max) {
+                    return level;
+                }
+            }
+            return LEVELS[LEVELS.length - 1];
+        }
+
+        // Update UI
+        function updateUI() {
+            const totals = calculateTotals();
+            const currentLevel = getCurrentLevel(totals.unexcused);
+            const nextLevel = LEVELS[LEVELS.indexOf(currentLevel) + 1];
+            
+            document.getElementById('currentLevel').textContent = currentLevel.name;
+            document.getElementById('levelDescription').textContent = currentLevel.description;
+            
+            const progressInLevel = totals.unexcused - currentLevel.min;
+            const levelRange = currentLevel.max - currentLevel.min;
+            const progressPercent = Math.min((progressInLevel / levelRange) * 100, 100);
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            
+            progressBar.style.width = progressPercent + '%';
+            progressBar.textContent = `${totals.unexcused} / ${currentLevel.max} mins`;
+            
+            progressContainer.className = 'progress-container';
+            if (progressPercent >= 80) {
+                progressContainer.classList.add('danger');
+            } else if (progressPercent >= 60) {
+                progressContainer.classList.add('warning');
+            }
+            
+            if (nextLevel) {
+                const remaining = nextLevel.max - totals.unexcused;
+                document.getElementById('remainingText').textContent = 
+                    `${remaining} unexcused minutes until ${nextLevel.name}`;
+            } else {
+                document.getElementById('remainingText').textContent = 'Maximum threshold reached';
+            }
+            
+            document.getElementById('totalMins').textContent = totals.total;
+            document.getElementById('excusedMins').textContent = totals.excused;
+            document.getElementById('unexcusedMins').innerHTML = `<strong>${totals.unexcused}</strong>`;
+            
+            updateLevelIndicators(totals.unexcused);
+            updateHistory();
+        }
+
+        function updateLevelIndicators(unexcusedMinutes) {
+            const levelElements = document.querySelectorAll('.level');
+            levelElements.forEach((el, index) => {
+                el.className = 'level';
+                if (unexcusedMinutes >= LEVELS[index].min && unexcusedMinutes < LEVELS[index].max) {
+                    el.classList.add('active');
+                } else if (unexcusedMinutes >= LEVELS[index].max && LEVELS[index].max !== Infinity) {
+                    el.classList.add('completed');
+                }
+            });
+        }
+
+        function updateHistory() {
+            const listContainer = document.getElementById('calloutList');
+            listContainer.innerHTML = '';
+            
+            if (!currentUser || !userData[currentUser]) return;
+            
+            const sortedCallouts = [...userData[currentUser].callouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedCallouts.forEach((callout, index) => {
+                const item = document.createElement('div');
+                item.className = 'callout-item';
+                
+                const unexcused = callout.total - callout.excused;
+                const date = new Date(callout.date).toLocaleDateString();
+                
+                item.innerHTML = `
+                    <div class="callout-info">
+                        <div class="callout-date">${date}</div>
+                        <div class="callout-mins">
+                            Total: ${callout.total} mins | 
+                            <span class="excused">Excused: ${callout.excused}</span> | 
+                            <span class="unexcused">Unexcused: ${unexcused}</span>
+                        </div>
+                        ${callout.reason ? `<div style="font-size: 12px; color: #666;">Reason: ${callout.reason}</div>` : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteCallout(${index})">Delete</button>
+                `;
+                
+                listContainer.appendChild(item);
+            });
+            
+            if (sortedCallouts.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #999;">No call-outs logged yet</p>';
+            }
+        }
+
+        // Add call-out
+        document.getElementById('calloutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('date').value;
+            const totalMins = parseInt(document.getElementById('totalMinsInput').value) || 0;
+            const excusedMins = parseInt(document.getElementById('excusedMinsInput').value) || 0;
+            const reason = document.getElementById('reason').value;
+            
+            if (totalMins <= 0) {
+                alert('Please enter a valid number of minutes');
+                return;
+            }
+            
+            if (excusedMins > totalMins) {
+                alert('Excused minutes cannot exceed total minutes');
+                return;
+            }
+            
+            if (!currentUser || !userData[currentUser]) {
+                alert('No user logged in');
+                return;
+            }
+            
+            // Add created timestamp
+            userData[currentUser].callouts.push({
+                date,
+                total: totalMins,
+                excused: excusedMins,
+                reason,
+                created: Date.now() // Add creation timestamp
+            });
+            
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Run cleanup after adding
+            cleanupOldRecords();
+            
+            document.getElementById('calloutForm').reset();
+            document.getElementById('date').valueAsDate = new Date();
+            
+            updateUI();
+        });
+
+        // Delete call-out
+        function deleteCallout(index) {
+            if (confirm('Are you sure you want to delete this call-out?')) {
+                const sortedCallouts = [...userData[currentUser].callouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const itemToDelete = sortedCallouts[index];
+                
+                const originalIndex = userData[currentUser].callouts.findIndex(c => 
+                    c.date === itemToDelete.date && 
+                    c.total === itemToDelete.total &&
+                    c.excused === itemToDelete.excused
+                );
+                
+                if (originalIndex !== -1) {
+                    userData[currentUser].callouts.splice(originalIndex, 1);
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    updateUI();
+                }
+            }
+        }
+
+        // Toggle history
+        function toggleHistory() {
+            const historySection = document.getElementById('historySection');
+            historySection.classList.toggle('hidden');
+        }
+
+        // Password enter key handler
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        // Initial load
+        // No initialization needed for user list anymore
+    </script>
+</body>
+</html>
